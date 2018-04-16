@@ -1,0 +1,63 @@
+Ryan Myers
+CPE 357-01
+Assignment 2 Decomposition
+
+Structures to be used:
+1.	A struct “word” that contains a given word as a string and an int
+    freq holding the times a given word has occurred in the input
+2.	A hash table that stores all words
+    a.	Dynamically allocated, resizes and rehashes as table grows
+
+Algorithms to be used:
+1.	Quick Sort to put all words stored in the resulting hash table in
+    alphabetical order after files traversal is complete
+    a.	Can use c standard library function qsort()
+
+Functions to be used:
+
+/* Quick sort algorithm provided by c standard library, takes in an array of
+   words and returns a sorted list in highest to lowest frequency order followed
+   by reverse alphabetic order */
+
+void qsort(void base, size_t nitems, size_t size, int (compar) (cons void , const void)) {}
+
+/* Function compares two input word structs, returns 1 if word 1 is greater
+   than word 2, 0 otherwise.  A word is greater if it has a higher frequency or
+   if frequencies are the same, the later alphabetically */
+
+int word_comp(struct word word1, struct word word2) {}
+
+/* Hash building function that takes in a file and an allocated memory space
+   to store words and alters the same memory space with all words in the file
+   added, reallocated if necessary */
+
+void add_words(FILE infile, void *hash) {}
+
+Steps:
+•	Parse command line arguments
+    o	Test by echoing user inputs, resulting arguments should match given format
+•	Verify command line arguments
+    o	If –n argument is given, ensure next argument is an integer value,
+        report error if otherwise
+    o	If file arguments are given use file inputs
+    o	If no arguments are given, take program inputs from stdin
+    o	Test by giving incorrect argument formats and handling all possible
+        errors, echo user input and attempt to open files on valid arguments
+•	Traverse file contents and add created words to hash table if not already
+    in the table or increase freq if it is
+    o	An item in the file is a word if the characters before and after it
+        are not alphabetic (!isalpha)
+    o	The hash table is considered full if hashing a word encounters an
+        already filled position with a different word
+    o	Beginning of system tests, test by returning resulting table and
+        ensuring that words are being stored properly
+•	Call quick sort on list to put it in highest freq order and in the case of
+    a tie, in reverse alphabetical
+    o	Sorting function must be written as parameter for qsort()
+    o	Test by comparing hash table before to hash table after sort
+    o	At this point full program should be functional
+•	System tests will be done using the sample runs given in the assignment
+    packet
+    o	Begin with small files and work up to bigger ones to test runtime
+        parameters
+
