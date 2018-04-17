@@ -13,20 +13,31 @@ struct word {
 int main(int argc, char *argv[]) {
     /* -n handle */
     struct word *hash = (struct word*)malloc(sizeof(struct word) * 1000);
+    int cap = 1000;
+    int *cap_ptr = &cap;
+    int num_results = 10;
     if (!strcmp(argv[1], "-n") && argc >= 3) {
         if (isdigit(argv[2])) {
-
+            num_results = atoi(argv[2]);
         }
         else {
-            fprintf(stderr, "usage: fw[-n num] [file 1 [file 2 ...]]");
+            fprintf(stderr, "usage: fw[-n num] [file 1 [file 2 ...]]\n");
             return 1;
         }
     }
     /* file inputs */
-    else if (argc > 1) {
+    if (argc > 1) {
         int i;
-        for (i = 1; i < argc; i++) {
-
+        if (!strcmp(argv[1], "-n") && isdigit(argv[2]))
+            i = 3;
+        else
+            i = 1;
+        for (i; i < argc; i++) {
+            FILE *file = fopen(argv[i], "r");
+            if(file == NULL)
+                printf(stderr, "%s: No such file or directory\n", argv[i]);
+            else
+                add_words(file, hash, cap_ptr);
         }
     }
     /* standard input */
@@ -113,11 +124,10 @@ void add_words(FILE *infile, void *hash_table, int *cap) {
 }
 
 void rehash(void *hash, int *cap) {
-    return NULL;
+    return;
 }
 
-unsigned long hash(unsigned char *str)
-{
+unsigned long hash(unsigned char *str){
     unsigned long hash = 5381;
     int c;
 
