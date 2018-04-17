@@ -124,6 +124,25 @@ void add_words(FILE *infile, void *hash_table, int *cap) {
 }
 
 void rehash(void *hash, int *cap) {
+    int i;
+    /* Create new hash table */
+    struct word *hash_copy = (struct word*)malloc(sizeof(struct word) * 2 *(*cap);
+
+    /* Move over old elements into new spots in the new hash table */
+    for (i = 0; i < *cap; i++){
+        hash_copy[hash(hash[i]->val) % (2 * (*cap))] = hash[i];
+    }
+
+    /* double cap and reallocate space in old hash table */
+    *cap = (*cap) * 2;
+    hash = realloc(sizeof(struct word) * (*cap));
+
+    /* copy over elements back into old hash table and free new hash table */
+    for (i = 0; i < *cap; i++){
+        hash[i] = hash_copy[i];
+    }
+    free(hash_copy);
+
     return;
 }
 
