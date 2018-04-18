@@ -3,10 +3,10 @@
 
 struct word;
 
-void add_words(FILE *infile, void *hash, int *cap);
+void add_words(FILE *infile, struct word *hash, int *cap);
 int word_comp(struct word *word1, struct word *word2);
-void rehash(void *hash, int *cap);
-unsigned long hash(unsigned char *str);
+void rehash(struct word *hash, int *cap);
+unsigned long hash(char *str);
 
 
 #endif
