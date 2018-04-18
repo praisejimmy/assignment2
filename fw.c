@@ -62,9 +62,8 @@ int main(int argc, char *argv[]) {
     /* sort the hash table */
     qsort(hash, cap, sizeof(struct word), word_comp);
 
-    for(i = 0; i < cap; i++){
-        if(hash[i].val != NULL)
-            printf("%s\t freq : %d\n", hash[i].val, hash[i].freq);
+    for(i = 0; i < num_results; i++){
+        printf("%s\t\t\t freq : %d\n", hash[i].val, hash[i].freq);
     }
     /* free everything? */
     free(hash);
