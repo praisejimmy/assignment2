@@ -26,33 +26,37 @@ int main(int argc, char *argv[]) {
     }
 
     if (argc >= 3 && !strcmp(argv[1], "-n")) {
-        if (isdigit(argv[2])) {
-            num_results = atoi(argv[2]);
+        int i = 0;
+        while (argv[i] != '\0') {
+            if (!isdigit(argv[2][i])) {
+                fprintf(stderr, "usage: fw[-n num] [file 1 [file 2 ...]]\n");
+                exit(1);
+            }
         }
-        else {
-            fprintf(stderr, "usage: fw[-n num] [file 1 [file 2 ...]]\n");
-            return 1;
-        }
+        num_results = atoi(argv[2]);
     }
     /* file inputs */
     if (argc > 1) {
         int i = 0;
-        if (!strcmp(argv[1], "-n") && isdigit(argv[2]))
+        if (!strcmp(argv[1], "-n"))
             i = 3;
         else
             i = 1;
         for (; i < argc; i++) {
             FILE *file = fopen(argv[i], "r");
-            if(file == NULL)
+            if(file == NULL) {
                 fprintf(stderr, "%s: No such file or directory\n", argv[i]);
-            else
+                exit(1);
+            }
+            else {
                 add_words(file, hash, cap_ptr);
+            }
             fclose(file);
         }
     }
     /* standard input */
     else {
-        
+
     }
 
     for(i = 0; i < cap; i++){
@@ -60,7 +64,7 @@ int main(int argc, char *argv[]) {
             printf("%s\t freq : %d\n", hash[i].val, hash[i].freq);
     }
     /* free everything? */
-    free(hash); 
+    free(hash);
 
     return 0;
 }
@@ -106,13 +110,14 @@ void add_words(FILE *infile, struct word *hash_table, int *cap) {
             in_word[size - 1] = c;
         }
         else if(size > 0){
+            int loc;
             size++;
             if (size > word_cap) {
                 word_cap += 1;
                 in_word = realloc(in_word, sizeof(char) * word_cap);
             }
             in_word[size - 1] = '\0';
-            int loc = hash(in_word) % *cap;
+            loc = hash(in_word) % *cap;
             size = 0;
             word_cap = 0;
             if (hash_table[loc].val == NULL) {
@@ -136,7 +141,7 @@ void add_words(FILE *infile, struct word *hash_table, int *cap) {
                 } while (hash_table[loc].val != NULL);*/
                 hash_table[loc] = new_word;
                 printf("\n%swas equal with hash of : %d\n",hash_table[loc].val, loc);
-            }            
+            }
         }
         c = fgetc(infile);
     }
