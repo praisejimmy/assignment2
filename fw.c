@@ -55,6 +55,9 @@ int main(int argc, char *argv[]) {
         
     }
 
+    /* sort the hash table */
+    qsort(hash, cap, sizeof(struct word), word_comp);
+
     for(i = 0; i < cap; i++){
         if(hash[i].val != NULL)
             printf("%s\t freq : %d\n", hash[i].val, hash[i].freq);
@@ -69,18 +72,29 @@ int main(int argc, char *argv[]) {
 greater than word 2, 0 otherwise.  A word is greater if it has a
 higher frequency or if frequencies are the same, the later alphabetically */
 
-int word_comp(struct word *word1, struct word *word2) {
-    if (word1->freq > word2->freq) {
-        return 1;
-    }
-    else if (word1->freq < word2->freq) {
+int word_comp(const void *word1, const void *word2) {
+    int freq1 = ((struct word *)word1)->freq;
+    int freq2 = ((struct word *)word2)->freq;
+    char *val1 = ((struct word *)word1)->val;
+    char *val2 = ((struct word *)word2)->val;
+
+    if (freq1 > freq2) {
         return -1;
     }
-    else if (strcmp(word1->val, word2->val) > 0) {
+    else if (freq1 < freq2) {
         return 1;
     }
-    else if (strcmp(word1->val, word2->val) < 0) {
+    else if (val1 == 0){
+        return 1;
+    }
+    else if (val2 == 0){
         return -1;
+    }
+    else if (strcmp(val1, val2) > 0) {
+        return -1;
+    }
+    else if (strcmp(val1, val2) < 0) {
+        return 1;
     }
     else {
         return 0;
