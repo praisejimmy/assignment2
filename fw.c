@@ -121,7 +121,7 @@ void add_words(FILE *infile, struct word *hash_table, int *cap) {
                 word_cap += 100;
                 in_word = realloc(in_word, sizeof(char) * word_cap);
             }
-            in_word[size - 1] = c;
+            in_word[size - 1] = tolower(c);
         }
         else if(size > 0){
             int loc;
@@ -136,13 +136,18 @@ void add_words(FILE *infile, struct word *hash_table, int *cap) {
                 hash_table[loc].val = realloc(hash_table[loc].val, (size + 1)*sizeof(char));
                 strcpy(hash_table[loc].val, in_word);
                 hash_table[loc].freq = 1;
-                printf("\n%s was null with hash of : %d\n", hash_table[loc].val, loc);
+                /*printf("\n%s was null with hash of : %d\n", hash_table[loc].val, loc);*/
             }
-            else if (hash_table[loc].freq != 0 && in_word != NULL && !strcmp(in_word, hash_table[loc].val)){
+            else if (in_word != NULL && !strcmp(in_word, hash_table[loc].val)){
                 hash_table[loc].freq++;
-                printf("\n%swas equal with val of : %s\n", hash_table[loc].val, hash_table[loc].val);
+                /*printf("\n%swas equal with val of : %s\n", hash_table[loc].val, hash_table[loc].val);*/
             }
             else {
+                int i = 1;
+                while(hash_table[loc].freq != 0 && strcmp(in_word, hash_table[loc].val)){
+                    loc = (loc + i) % *cap;
+                    i = i*i;
+                }
                 hash_table[loc].val = realloc(hash_table[loc].val, (size + 1)*sizeof(char));
                 strcpy(hash_table[loc].val, in_word);
                 hash_table[loc].freq = 1;
@@ -150,7 +155,7 @@ void add_words(FILE *infile, struct word *hash_table, int *cap) {
                     rehash(hash_table, cap);
                     int loc = hash(new_word.val);
                 } while (hash_table[loc].val != NULL);*/
-                printf("\n%swas equal with hash of : %d\n",hash_table[loc].val, loc);
+                /*printf("\n%swas equal with hash of : %d\n",hash_table[loc].val, loc);*/
             }
             size = 0;
             word_cap = 0;
