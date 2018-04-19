@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 
     /* initialize each entry to be an empty struct */
     for(i = 0; i < 1000; i++){
-        hash[i].val = NULL;
+        hash[i].val = malloc(0);
         hash[i].freq = 0;
     }
 
@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
     /* sort the hash table */
     qsort(hash, cap, sizeof(struct word), word_comp);
 
+    printf("\ntop 10 most frequent words : \n___________________________\n");
     for(i = 0; i < num_results; i++){
         printf("%s\t\t\t freq : %d\n", hash[i].val, hash[i].freq);
     }
@@ -131,30 +132,28 @@ void add_words(FILE *infile, struct word *hash_table, int *cap) {
             }
             in_word[size - 1] = '\0';
             loc = hash(in_word) % *cap;
-            size = 0;
-            word_cap = 0;
-            if (hash_table[loc].val == NULL) {
-                struct word new_word;/* = (struct word*)malloc(sizeof(struct word));*/
-                new_word.val = in_word;
-                new_word.freq = 1;
-                hash_table[loc] = new_word;
+            if (hash_table[loc].freq == 0) {
+                hash_table[loc].val = realloc(hash_table[loc].val, (size + 1)*sizeof(char));
+                strcpy(hash_table[loc].val, in_word);
+                hash_table[loc].freq = 1;
                 printf("\n%s was null with hash of : %d\n", hash_table[loc].val, loc);
             }
-            else if (hash_table[loc].val != NULL && in_word != NULL && !strcmp(in_word, hash_table[loc].val)){
+            else if (hash_table[loc].freq != 0 && in_word != NULL && !strcmp(in_word, hash_table[loc].val)){
                 hash_table[loc].freq++;
                 printf("\n%swas equal with val of : %s\n", hash_table[loc].val, hash_table[loc].val);
             }
             else {
-                struct word new_word;/* = (struct word*)malloc(sizeof(struct word));*/
-                new_word.val = in_word;
-                new_word.freq = 1;
+                hash_table[loc].val = realloc(hash_table[loc].val, (size + 1)*sizeof(char));
+                strcpy(hash_table[loc].val, in_word);
+                hash_table[loc].freq = 1;
                 /*do {
                     rehash(hash_table, cap);
                     int loc = hash(new_word.val);
                 } while (hash_table[loc].val != NULL);*/
-                hash_table[loc] = new_word;
                 printf("\n%swas equal with hash of : %d\n",hash_table[loc].val, loc);
             }
+            size = 0;
+            word_cap = 0;
         }
         c = fgetc(infile);
     }
