@@ -4,6 +4,8 @@
 #include <string.h>
 #include "fw.h"
 
+int num_words;
+
 /* word holds a number of word occurences (freq) and a string word (val) */
 struct word {
     int freq;
@@ -18,6 +20,7 @@ int main(int argc, char *argv[]) {
     int cap = 1000;
     int *cap_ptr = &cap;
     int num_results = 10;
+    num_words = 0;
 
     /* initialize each entry to be an empty struct */
     for(i = 0; i < 1000; i++){
@@ -31,6 +34,7 @@ int main(int argc, char *argv[]) {
             if (!isdigit(argv[2][i])) {
                 fprintf(stderr, "usage: fw[-n num] [file 1 [file 2 ...]]\n");
                 exit(1);
+                i++;
             }
         }
         num_results = atoi(argv[2]);
@@ -49,7 +53,7 @@ int main(int argc, char *argv[]) {
                 exit(1);
             }
             else {
-                add_words(file, hash, cap_ptr);
+                hash = add_words(file, hash, cap_ptr);
             }
             fclose(file);
         }
@@ -67,6 +71,9 @@ int main(int argc, char *argv[]) {
         printf("%s\t\t\t freq : %d\n", hash[i].val, hash[i].freq);
     }
     /* free everything? */
+    for(i = 0; i < *cap_ptr; i++){
+        free(hash[i].val);
+    }
     free(hash);
 
     return 0;
@@ -88,10 +95,10 @@ int word_comp(const void *word1, const void *word2) {
     else if (freq1 < freq2) {
         return 1;
     }
-    else if (val1 == 0){
+    else if (freq1 == 0){
         return 1;
     }
-    else if (val2 == 0){
+    else if (freq2 == 0){
         return -1;
     }
     else if (strcmp(val1, val2) > 0) {
@@ -109,7 +116,7 @@ int word_comp(const void *word1, const void *word2) {
 memory space to store words and alters the same memory space with
 all words in the file added, reallocated if necessary*/
 
-void add_words(FILE *infile, struct word *hash_table, int *cap) {
+struct word *add_words(FILE *infile, struct word *hash_table, int *cap) {
     char *in_word = malloc(0);
     int size = 0;
     int word_cap = 0;
@@ -124,7 +131,7 @@ void add_words(FILE *infile, struct word *hash_table, int *cap) {
             in_word[size - 1] = tolower(c);
         }
         else if(size > 0){
-            int loc;
+            unsigned int loc;
             size++;
             if (size > word_cap) {
                 word_cap += 1;
@@ -133,50 +140,84 @@ void add_words(FILE *infile, struct word *hash_table, int *cap) {
             in_word[size - 1] = '\0';
             loc = hash(in_word) % *cap;
             if (hash_table[loc].freq == 0) {
-                hash_table[loc].val = realloc(hash_table[loc].val, (size + 1)*sizeof(char));
+                hash_table[loc].val = realloc(hash_table[loc].val, size*sizeof(char));
                 strcpy(hash_table[loc].val, in_word);
                 hash_table[loc].freq = 1;
+                /*printf("\n%s was null with hash of : %d\n", hash_table[loc].val, loc);*/
             }
             else if (in_word != NULL && !strcmp(in_word, hash_table[loc].val)){
                 hash_table[loc].freq++;
+                /*printf("\n%swas equal with val of : %s\n", hash_table[loc].val, hash_table[loc].val);*/
             }
             else {
-                do {
-                    rehash(hash_table, cap);
-                    loc = hash(in_word) % *cap;
-                } while (hash_table[loc].val != NULL);
+                int i = 1;
+                while(hash_table[loc].freq != 0 && strcmp(in_word, hash_table[loc].val)){
+                    loc = (loc + i*i) % *cap;
+                    i++;
+                }
+                hash_table[loc].val = realloc(hash_table[loc].val, (size + 1)*sizeof(char));
                 strcpy(hash_table[loc].val, in_word);
                 hash_table[loc].freq = 1;
+                /*do {
+                    rehash(hash_table, cap);
+                    int loc = hash(new_word.val);
+                } while (hash_table[loc].val != NULL);*/
+                /*printf("\n%swas equal with hash of : %d\n",hash_table[loc].val, loc);*/
             }
             size = 0;
             word_cap = 0;
-        }
+
+            num_words++;
+
+            /* check if needs to be rehashed */
+            if((num_words*1.0 / *cap) > 0.8){
+                hash_table = rehash(hash_table, cap);
+            }
+        }       
+
         c = fgetc(infile);
     }
     free(in_word);
+    return hash_table;
 }
 
-void rehash(struct word *hash_table, int *cap) {
+struct word *rehash(struct word *hash_table, int *cap) {
     int i;
+    struct word *hash_copy;
+    *cap = 2 * (*cap);
     /* Create new hash table */
-    struct word *hash_copy = (struct word*)malloc(sizeof(struct word) * 2 *(*cap));
+    hash_copy = (struct word*)malloc(sizeof(struct word) * *cap);
 
+    /* finish initializing rest of new table */
+    for (i = 0; i < *cap; i++){
+        hash_copy[i].val = malloc(0);
+        hash_copy[i].freq = 0;
+    }
     /* Move over old elements into new spots in the new hash table */
-    for (i = 0; i < *cap; i++){
-        hash_copy[hash(hash_table[i].val) % (2 * (*cap))] = hash_table[i];
+    for (i = 0; i < (*cap)/2; i++){
+        if(hash_table[i].freq != 0){
+            unsigned int loc = hash(hash_table[i].val) % *cap;
+            if(hash_copy[loc].freq != 0){
+                int j = 1;
+                while(hash_copy[loc].freq != 0){
+                    loc = (loc + j*j) % *cap;
+                    j++;
+                }
+            }
+            hash_copy[loc].val = realloc(hash_copy[loc].val, sizeof(char) * (1 + strlen(hash_table[i].val)));
+            strcpy(hash_copy[loc].val, hash_table[i].val);
+            hash_copy[loc].freq = hash_table[i].freq;
+        }
     }
 
-    /* double cap and reallocate space in old hash table */
-    *cap = (*cap) * 2;
-    hash_table = realloc(hash_table, sizeof(struct word) * (*cap));
-
-    /* copy over elements back into old hash table and free new hash table */
-    for (i = 0; i < *cap; i++){
-        hash_table[i] = hash_copy[i];
+    for(i = 0; i < (*cap)/2; i++){
+        free(hash_table[i].val);
     }
-    free(hash_copy);
+    free(hash_table);
 
-    return;
+
+
+    return hash_copy;
 }
 
 unsigned long hash(char *str){
