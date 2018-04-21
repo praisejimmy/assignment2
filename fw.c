@@ -72,9 +72,11 @@ int main(int argc, char *argv[]) {
     /* sort the hash table */
     qsort(hash, cap, sizeof(struct word), word_comp);
 
-    printf("\ntop %d most frequent words : \n___________________________\n", num_results);
+    printf("The top %d words (out of %d) are:\n", num_results, num_words);
     for(i = 0; i < num_results; i++){
-        printf("%s\t\t\t freq : %d\n", hash[i].val, hash[i].freq);
+        if(hash[i].freq != 0){
+            printf("%9d %s\n", hash[i].freq, hash[i].val);
+        }
     }
     /* free everything? */
     for(i = 0; i < *cap_ptr; i++){
@@ -149,6 +151,7 @@ struct word *add_words(FILE *infile, struct word *hash_table, int *cap) {
                 hash_table[loc].val = realloc(hash_table[loc].val, size*sizeof(char));
                 strcpy(hash_table[loc].val, in_word);
                 hash_table[loc].freq = 1;
+                num_words++;
                 /*printf("\n%s was null with hash of : %d\n", hash_table[loc].val, loc);*/
             }
             else if (in_word != NULL && !strcmp(in_word, hash_table[loc].val)){
@@ -165,6 +168,7 @@ struct word *add_words(FILE *infile, struct word *hash_table, int *cap) {
                     hash_table[loc].val = realloc(hash_table[loc].val, (size + 1)*sizeof(char));
                     strcpy(hash_table[loc].val, in_word);
                     hash_table[loc].freq = 1;
+                    num_words++;
                 }
                 else {
                     hash_table[loc].freq++;
@@ -177,8 +181,6 @@ struct word *add_words(FILE *infile, struct word *hash_table, int *cap) {
             }
             size = 0;
             word_cap = 0;
-
-            num_words++;
 
             /* check if needs to be rehashed */
             if((num_words*1.0 / *cap) > 0.8){
