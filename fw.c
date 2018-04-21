@@ -15,13 +15,12 @@ struct word {
 int main(int argc, char *argv[]) {
     /* -n handle */
     struct word *hash = (struct word*)malloc(sizeof(struct word) * 1000);
-
     int i;
     int cap = 1000;
     int *cap_ptr = &cap;
     int num_results = 10;
     num_words = 0;
-
+    
     /* initialize each entry to be an empty struct */
     for(i = 0; i < 1000; i++){
         hash[i].val = malloc(0);
@@ -30,17 +29,23 @@ int main(int argc, char *argv[]) {
 
     if (argc >= 3 && !strcmp(argv[1], "-n")) {
         int i = 0;
-        while (argv[i] != '\0') {
+        while (argv[2][i] != '\0') {
             if (!isdigit(argv[2][i])) {
                 fprintf(stderr, "usage: fw[-n num] [file 1 [file 2 ...]]\n");
                 exit(1);
-                i++;
             }
+            i++;
         }
         num_results = atoi(argv[2]);
     }
+
+    /* standard input  with -n handle */
+    if (argc == 3 && !strcmp(argv[1], "-n")) {
+        hash = add_words(stdin, hash, cap_ptr);
+    }
+
     /* file inputs */
-    if (argc > 1) {
+    else if (argc > 1) {
         int i = 0;
         if (!strcmp(argv[1], "-n"))
             i = 3;
@@ -58,15 +63,16 @@ int main(int argc, char *argv[]) {
             fclose(file);
         }
     }
+
     /* standard input */
     else {
-
+        hash = add_words(stdin, hash, cap_ptr);
     }
 
     /* sort the hash table */
     qsort(hash, cap, sizeof(struct word), word_comp);
 
-    printf("\ntop 10 most frequent words : \n___________________________\n");
+    printf("\ntop %d most frequent words : \n___________________________\n", num_results);
     for(i = 0; i < num_results; i++){
         printf("%s\t\t\t freq : %d\n", hash[i].val, hash[i].freq);
     }
@@ -173,7 +179,7 @@ struct word *add_words(FILE *infile, struct word *hash_table, int *cap) {
             if((num_words*1.0 / *cap) > 0.8){
                 hash_table = rehash(hash_table, cap);
             }
-        }       
+        }
 
         c = fgetc(infile);
     }
