@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     int *cap_ptr = &cap;
     int num_results = 10;
     num_words = 0;
-    
+
     /* initialize each entry to be an empty struct */
     for(i = 0; i < 1000; i++){
         hash[i].val = malloc(0);
@@ -161,9 +161,14 @@ struct word *add_words(FILE *infile, struct word *hash_table, int *cap) {
                     loc = (loc + i*i) % *cap;
                     i++;
                 }
-                hash_table[loc].val = realloc(hash_table[loc].val, (size + 1)*sizeof(char));
-                strcpy(hash_table[loc].val, in_word);
-                hash_table[loc].freq = 1;
+                if (hash_table[loc].freq == 0) {
+                    hash_table[loc].val = realloc(hash_table[loc].val, (size + 1)*sizeof(char));
+                    strcpy(hash_table[loc].val, in_word);
+                    hash_table[loc].freq = 1;
+                }
+                else {
+                    hash_table[loc].freq++;
+                }
                 /*do {
                     rehash(hash_table, cap);
                     int loc = hash(new_word.val);
@@ -220,8 +225,6 @@ struct word *rehash(struct word *hash_table, int *cap) {
         free(hash_table[i].val);
     }
     free(hash_table);
-
-
 
     return hash_copy;
 }
