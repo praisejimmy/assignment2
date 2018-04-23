@@ -6,7 +6,7 @@
 
 int num_words;
 
-/* word holds a number of word occurences (freq) and a string word (val) */
+/* word holds a number of word occurences (freq) and a string word (val) im making this bigger than 80 */
 struct word {
     int freq;
     char *val;
@@ -27,11 +27,15 @@ int main(int argc, char *argv[]) {
         hash[i].freq = 0;
     }
 
+    if (argc == 2 && !strcmp(argv[1], "-n")){
+        fprintf(stderr, "usage: fw [-n num] [file 1 [file 2 ...]]\n");
+    }
+
     if (argc >= 3 && !strcmp(argv[1], "-n")) {
         int i = 0;
         while (argv[2][i] != '\0') {
             if (!isdigit(argv[2][i])) {
-                fprintf(stderr, "usage: fw[-n num] [file 1 [file 2 ...]]\n");
+                fprintf(stderr, "usage: fw [-n num] [file 1 [file 2 ...]]\n");
                 exit(1);
             }
             i++;
@@ -53,14 +57,13 @@ int main(int argc, char *argv[]) {
             i = 1;
         for (; i < argc; i++) {
             FILE *file = fopen(argv[i], "r");
-            if(file == NULL) {
+            if(!file) {
                 fprintf(stderr, "%s: No such file or directory\n", argv[i]);
-                exit(1);
             }
             else {
                 hash = add_words(file, hash, cap_ptr);
+                fclose(file);
             }
-            fclose(file);
         }
     }
 
@@ -152,20 +155,20 @@ struct word *add_words(FILE *infile, struct word *hash_table, int *cap) {
                 strcpy(hash_table[loc].val, in_word);
                 hash_table[loc].freq = 1;
                 num_words++;
-                /*printf("\n%s was null with hash of : %d\n", hash_table[loc].val, loc);*/
             }
             else if (in_word != NULL && !strcmp(in_word, hash_table[loc].val)){
                 hash_table[loc].freq++;
-                /*printf("\n%swas equal with val of : %s\n", hash_table[loc].val, hash_table[loc].val);*/
             }
             else {
                 int i = 1;
-                while(hash_table[loc].freq != 0 && strcmp(in_word, hash_table[loc].val)){
+                while(hash_table[loc].freq != 0 && 
+                        strcmp(in_word, hash_table[loc].val)){
                     loc = (loc + i*i) % *cap;
                     i++;
                 }
                 if (hash_table[loc].freq == 0) {
-                    hash_table[loc].val = realloc(hash_table[loc].val, (size + 1)*sizeof(char));
+                    hash_table[loc].val = realloc(hash_table[loc].val, 
+                            (size + 1)*sizeof(char));
                     strcpy(hash_table[loc].val, in_word);
                     hash_table[loc].freq = 1;
                     num_words++;
@@ -173,11 +176,6 @@ struct word *add_words(FILE *infile, struct word *hash_table, int *cap) {
                 else {
                     hash_table[loc].freq++;
                 }
-                /*do {
-                    rehash(hash_table, cap);
-                    int loc = hash(new_word.val);
-                } while (hash_table[loc].val != NULL);*/
-                /*printf("\n%swas equal with hash of : %d\n",hash_table[loc].val, loc);*/
             }
             size = 0;
             word_cap = 0;
