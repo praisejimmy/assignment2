@@ -6,7 +6,7 @@
 
 int num_words;
 
-/* word holds a number of word occurences (freq) and a string word (val) im making this bigger than 80 */
+/* word holds a number of word occurences (freq) and a string word (val) */
 struct word {
     int freq;
     char *val;
@@ -27,14 +27,15 @@ int main(int argc, char *argv[]) {
         hash[i].freq = 0;
     }
 
-    if (argc == 2 && !strcmp(argv[1], "-n")){
+    if (argc == 2 && !strcmp(argv[1], "-n")){ /* n flag with no number */
         fprintf(stderr, "usage: fw [-n num] [file 1 [file 2 ...]]\n");
+        exit(1);
     }
 
     if (argc >= 3 && !strcmp(argv[1], "-n")) {
         int i = 0;
         while (argv[2][i] != '\0') {
-            if (!isdigit(argv[2][i])) {
+            if (!isdigit(argv[2][i])) { /* n flag but next isn't digit */
                 fprintf(stderr, "usage: fw [-n num] [file 1 [file 2 ...]]\n");
                 exit(1);
             }
@@ -50,11 +51,9 @@ int main(int argc, char *argv[]) {
 
     /* file inputs */
     else if (argc > 1) {
-        int i = 0;
+        int i = 1;
         if (!strcmp(argv[1], "-n"))
             i = 3;
-        else
-            i = 1;
         for (; i < argc; i++) {
             FILE *file = fopen(argv[i], "r");
             if(!file) {
@@ -81,7 +80,7 @@ int main(int argc, char *argv[]) {
             printf("%9d %s\n", hash[i].freq, hash[i].val);
         }
     }
-    /* free everything? */
+    /* free everything */
     for(i = 0; i < *cap_ptr; i++){
         free(hash[i].val);
     }
@@ -133,7 +132,7 @@ struct word *add_words(FILE *infile, struct word *hash_table, int *cap) {
     int word_cap = 0;
     int c = fgetc(infile);
     while (c != EOF) {
-        if (isalpha(c)) {
+        if (isalpha(c)) { /* is a character... add to string */
             size++;
             if (size > word_cap) {
                 word_cap += 100;
@@ -141,7 +140,7 @@ struct word *add_words(FILE *infile, struct word *hash_table, int *cap) {
             }
             in_word[size - 1] = tolower(c);
         }
-        else if(size > 0){
+        else if(size > 0){ /* whole word found... add to list */
             unsigned int loc;
             size++;
             if (size > word_cap) {
@@ -151,7 +150,8 @@ struct word *add_words(FILE *infile, struct word *hash_table, int *cap) {
             in_word[size - 1] = '\0';
             loc = hash(in_word) % *cap;
             if (hash_table[loc].freq == 0) {
-                hash_table[loc].val = realloc(hash_table[loc].val, size*sizeof(char));
+                hash_table[loc].val = realloc(hash_table[loc].val, 
+                    size*sizeof(char));
                 strcpy(hash_table[loc].val, in_word);
                 hash_table[loc].freq = 1;
                 num_words++;
@@ -215,7 +215,8 @@ struct word *rehash(struct word *hash_table, int *cap) {
                     j++;
                 }
             }
-            hash_copy[loc].val = realloc(hash_copy[loc].val, sizeof(char) * (1 + strlen(hash_table[i].val)));
+            hash_copy[loc].val = realloc(hash_copy[loc].val,
+                sizeof(char) * (1 + strlen(hash_table[i].val)));
             strcpy(hash_copy[loc].val, hash_table[i].val);
             hash_copy[loc].freq = hash_table[i].freq;
         }
