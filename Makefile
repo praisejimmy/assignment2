@@ -11,7 +11,7 @@ fw.o : fw.c fw.h
 	$(CC) $(CFLAGS) -c fw.c
 
 handin : $(MAIN) 
-	handin getaylor-grader 357hw2-01 fw.c fw.h Makefile
+	handin getaylor-grader 357hw2-01 fw.c fw.h Makefile README
 
 clean :
-	rm *.o $(MAIN) core
+	rm *.o $(MAIN)
